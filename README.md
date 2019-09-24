@@ -1,1 +1,1 @@
-# wildfly-administration-training
+# WildFly Administration Training
