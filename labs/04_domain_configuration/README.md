@@ -53,10 +53,9 @@ Use the same steps for 3rd terminal, just replace the **`slave1`** value with **
 ### Verify the domain is running
 Console window on master host should contain following log entries:
 ```
-[Host Controller] 17:57:02,374 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 7) WFLYHC0019: Registered remote slave host "slave1", JBoss WildFly Full 11.0.0.Final (WildFly 3.0.8.Final)
-[Host Controller] 18:17:21,035 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 7) WFLYHC0019: Registered remote slave host "slave2", JBoss WildFly Full 11.0.0.Final (WildFly 3.0.8.Final)
+[Host Controller] 21:34:23,983 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 39) WFLYHC0019: Registered remote slave host "slave1", JBoss WildFly Full 17.0.1.Final (WildFly 9.0.2.Final)
+[Host Controller] 21:38:31,869 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 39) WFLYHC0019: Registered remote slave host "slave2", JBoss WildFly Full 17.0.1.Final (WildFly 9.0.2.Final)
 ```
-
 
 ## Task 2: Deploy application to domain
 
@@ -67,9 +66,7 @@ Use management console on master host to deploy `hello` application:
 1. Add a new deployment to the content repository
   * Deployments -> Content Repository -> Add
 2. Assign the deployment to one or more server groups
-  * Deployments -> Unassigned Content -> Assign -> `main-server-group`
-3. Enable the deployment
-  * Deployments -> Server groups -> main-server-group -> Enable `hello.war`
+  * Content Repository -> `hello.war` -> Deploy -> `main-server-group`
 
 ### Verify the application runs
 

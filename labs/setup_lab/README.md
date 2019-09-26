@@ -33,10 +33,15 @@ sudo usermod -aG docker student
 yum install -y dkms gcc make kernel-devel
 # and install Virtual Box Guest Additions
 
-yum install -y terminator geany nghttp2 maven git tree
+yum install -y terminator geany nghttp2 git tree
 
 # remove packagekit (Graphical updating tool)
 yum remove PackageKit*
+
+# install Maven (CentOS 7 contains an old one which fails to compile quickstarts)
+cd /opt
+curl -s http://mirror.dkm.cz/apache/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz | sudo tar xzvf -
+sudo ln -s /opt/apache-maven-3.6.2/bin/mvn /usr/bin/mvn
 
 echo "127.0.0.1 my-server.my-company.example" >> /etc/hosts
 
