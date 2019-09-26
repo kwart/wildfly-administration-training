@@ -9,7 +9,7 @@ popd
 
 mkdir wildfly-labs-resources
 pushd wildfly-labs-resources
-wget http://download.jboss.org/wildfly/11.0.0.Final/wildfly-11.0.0.Final.zip
+wget http://download.jboss.org/wildfly/17.0.1.Final/wildfly-17.0.1.Final.zip
 wget https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
 wget https://github.com/kwart/ldap-server/releases/download/2017-09-04/ldap-server.jar
 popd

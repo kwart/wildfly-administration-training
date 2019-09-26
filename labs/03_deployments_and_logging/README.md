@@ -5,7 +5,10 @@
 **What:** Compile and deploy sample application which logs some messages to server log.
 
 **How:**
-* go to `applications/hello` directory and use maven to build web application from sources:
+* go to `applications/hello` directory and use Maven to build web application from sources:
+  * you can find the source code in [index.jsp](/applications/hello/src/main/webapp/index.jsp)
+  * Maven build descriptor (POM) in [pom.xml](/applications/hello/pom.xml)
+
 ```
 cd ~/wildfly-administration-training/applications/hello
 

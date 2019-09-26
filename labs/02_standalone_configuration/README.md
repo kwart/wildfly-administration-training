@@ -1,8 +1,8 @@
 # Lab - WildFly - CLI configuration
 
-## Task 1: Use Management console
+## Task 1: Use the Management console
 
-**What:** use management console to view server log files
+**What:** use the management console to view server log files
 
 **How:**
 1. Use `bin/add-user.sh` script to add a new Management User
@@ -14,7 +14,7 @@
 3. Open Management console in a browser:
   * http://localhost:9990
 4. View server logs
-  * Navigate to `Runtime` -> `Standalone Server` -> `Log Files` -> `View`
+  * Navigate to `Runtime` -> `localhost` -> `Log Files`
   * select `server.log` and press `View` button
 
 ## Task 2: Configure running server using CLI
@@ -39,6 +39,9 @@ bin/jboss-cli.sh -c
 /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=enable-http2, value=false)
 # you have to reload server to changes take effect
 reload
+
+# exit the CLI tool
+quit
 ```
 
 * verify the `http2` is disabled
@@ -46,14 +49,20 @@ reload
 nghttp http://localhost:8080/
 ```
 
+* the HTTP/1.1  protocol still works
+```bash
+curl http://localhost:8080/
+```
+
 
 ## Task 3: Configure server when it's not running
 
-**What:** Without server running use the JBoss CLI for configuration
+**What:** Configure server without starting it by using the JBoss CLI
 
 **How:**
 
-* Start JBoss CLI:
+* Make sure the WildFly server is stopped (if not, press `Ctrl-C` in its console window)
+* Start JBoss CLI
 ```bash
 bin/jboss-cli.sh
 ```
@@ -73,6 +82,9 @@ stop-embedded-server
 # quit the cli
 quit
 ```
+
+Run the server and verify in Management console GUI, the property is available:
+* Navigate to: `Configuration` -> `System Properties` - press `View` button
 
 ## Optional task
 
