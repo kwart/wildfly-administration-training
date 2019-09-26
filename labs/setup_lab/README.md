@@ -35,6 +35,9 @@ yum install -y dkms gcc make kernel-devel
 
 yum install -y terminator geany nghttp2 maven git tree
 
+# remove packagekit (Graphical updating tool)
+yum remove PackageKit*
+
 echo "127.0.0.1 my-server.my-company.example" >> /etc/hosts
 
 yum clean all
