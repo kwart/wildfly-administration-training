@@ -18,7 +18,7 @@ module add --name=com.postgresql \
 * Check if the module was created by looking into modules directory:
   * it should contain 2 files (the driver JAR and `module.xml`)
 ```
-ls wildfly-11.0.0.Final/modules/com/postgresql/main/
+ls wildfly-17.0.1.Final/modules/com/postgresql/main/
 ```
 
 ## Task 2: Add a datasource
