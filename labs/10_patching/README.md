@@ -6,15 +6,15 @@
 
 **How:**
 
-WildFly 11 includes slf4j-api library in version 1.7.22, we will update it to version 1.7.25.
+WildFly 17 includes slf4j-api library in version `1.7.22.jbossorg-1`, we will update it to version `1.7.25`.
 
 We will use WildFly Patch Generation Tool available on GitHub: https://github.com/jbossas/patch-gen
 
 Steps:
-* Prepare clean installation of WildFly 11 (simply unzip)
+* Prepare a clean installation of WildFly 17 (simply unzip)
 * Prepare a copy of the clean installation where the changes will be applied
 ```
-cp -r wildfly-11.0.0.Final wildfly-modified
+cp -r wildfly-17.0.1.Final wildfly-modified
 ```
 * download the new slf4j-api version to the module directory, edit module descriptor, remove old version
 ```
@@ -25,10 +25,10 @@ pushd wildfly-modified/modules/system/layers/base/org/slf4j/main/
 wget https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar
 
 # replace version in module descriptor
-sed -i 's#1.7.22#1.7.25#' module.xml
+sed -i 's#1.7.22.jbossorg-1#1.7.25#' module.xml
 
 # remove the old library version
-rm slf4j-api-1.7.22.jar
+rm slf4j-api-1.7.22.jbossorg-1.jar
 
 # return working directory to the previous path
 popd
@@ -36,25 +36,25 @@ popd
 
 * download a release of the WildFly Patch Generation Tool:
 ```
-wget https://github.com/jbossas/patch-gen/releases/download/2.0.0.Final/patch-gen-2.0.0.Final-shaded.jar
+wget https://github.com/jbossas/patch-gen/releases/download/2.0.1.Final/patch-gen-2.0.1.Final-shaded.jar
 ```
 
 * generate config file and then generate a patch:
 ```
 # create a patch config file template - it generates a file named patch-config-slf4j-patch.xml
-java -jar patch-gen-2.0.0.Final-shaded.jar --create-template --cumulative slf4j-patch
+java -jar patch-gen-2.0.1.Final-shaded.jar --create-template --cumulative slf4j-patch
 
 # !!! usually you edit the config file at this point and provide some metadata into it
 
 # generate the patch file by comparing clean and modified WildFly instances
-java -jar patch-gen-2.0.0.Final-shaded.jar --applies-to-dist=wildfly-11.0.0.Final \
+java -jar patch-gen-2.0.1.Final-shaded.jar --applies-to-dist=wildfly-17.0.1.Final \
   --updated-dist=wildfly-modified --patch-config=patch-config-slf4j-patch.xml \
-  --output-file=wildfly-11-slf4j.patch.zip
+  --output-file=wildfly-17-slf4j.patch.zip
 ```
 
 * verify the patch file is created. You can also list its content:
 ```
-unzip -l wildfly-11-slf4j.patch.zip
+unzip -l wildfly-17-slf4j.patch.zip
 ```
 
 ## Task 2: Apply the patch
@@ -64,17 +64,17 @@ unzip -l wildfly-11-slf4j.patch.zip
 **How:**
 * verify the original clean installation has still old slf4j version
 ```
-find wildfly-11.0.0.Final/ -name 'slf4j*'
+find wildfly-17.0.1.Final/ -name 'slf4j*'
 ```
 * Apply the patch by using JBoss CLI:
 ```
-wildfly-11.0.0.Final/bin/jboss-cli.sh "patch apply wildfly-11-slf4j.patch.zip"
+wildfly-17.0.1.Final/bin/jboss-cli.sh "patch apply wildfly-17-slf4j.patch.zip"
 ```
 * Run the `find` command again to verify the new slf4j version is present
 
 **The old version still lives in the old location, the new version is in a new overlay layer:**
 ```
-wildfly-11.0.0.Final/modules/system/layers/base/.overlays/layer-base-slf4j-patch/org/slf4j/main/slf4j-api-1.7.25.jar
+wildfly-17.0.1.Final/modules/system/layers/base/.overlays/layer-base-slf4j-patch/org/slf4j/main/slf4j-api-1.7.25.jar
 ```
 
 ## (Optional) Task 3: Rollback the patch
