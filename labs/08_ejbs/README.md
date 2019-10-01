@@ -13,9 +13,10 @@ and assign them a new thread pool:
 * Let's use maximal number of threads based on CPU cores available: `2 * countOfCpuCores
 * Check number of cores:
 ```
+# List CPUs attributes
 cat /proc/cpuinfo
 
-# As you can see, we have just one core in the test environment
+# You can see the cores assigned to your VirtualBox instance
 ```
 
 * Use JBoss CLI to create new thread pool and assign it to remote invocations

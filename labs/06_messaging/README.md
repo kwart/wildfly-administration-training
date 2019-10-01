@@ -36,7 +36,9 @@ bin/add-user.sh -a -u guest -p guest -g guest
 cd ~/wildfly-quickstarts/helloworld-jms
 mvn clean package
 ```
-* start the Producer and/or the Consumer
+* start the [Producer](https://github.com/kwart/quickstart/blob/wildfly-training/helloworld-jms/src/main/java/org/jboss/as/quickstarts/jms/ProducerClient.java)
+ and/or the [Consumer](https://github.com/kwart/quickstart/blob/wildfly-training/helloworld-jms/src/main/java/org/jboss/as/quickstarts/jms/ConsumerClient.java) - both classes
+ shares the parent class [AbstractJMSClient](https://github.com/kwart/quickstart/blob/wildfly-training/helloworld-jms/src/main/java/org/jboss/as/quickstarts/jms/AbstractJMSClient.java)
 ```
 # the Producer
 java -jar target/helloworld-jms.jar -producer
