@@ -114,7 +114,7 @@ One Host Controller instance is configured to act as the central management poin
 
 A domain.xml file must be located in the domain/configuration directory of an installation that's meant to run the Domain Controller. It does not need to be present in installations that are not meant to run a Domain Controller; i.e. those whose Host Controller is configured to contact a remote Domain Controller. The presence of a domain.xml file on such a server does no harm.
 
-The domain.xml file includes, among other things, the configuration of the various "profiles" that WildFly instances in the domain can be configured to run. A profile configuration includes the detailed configuration of the various subsystems that comprise that profile (e.g. an embedded JBoss Web instance is a subsystem; a JBoss TS transaction manager is a subsystem, etc). The domain configuration also includes the definition of groups of sockets that those subsystems may open. The domain configuration also includes the definition of "server groups":
+The domain.xml file includes, among other things, the configuration of the various "profiles" that WildFly instances in the domain can be configured to run. A profile configuration includes the detailed configuration of the various subsystems that comprise that profile. The domain configuration also includes the definition of groups of sockets that those subsystems may open. The domain configuration also includes the definition of "server groups":
 
 ---
 
@@ -188,7 +188,6 @@ The domain.xml file includes, among other things, the configuration of the vario
 ```
 
 ???
-* both native and http management interfaces are enabled
 * https://docs.jboss.org/author/display/WFLY/Domain+Setup
 
 ---
@@ -208,7 +207,10 @@ The domain.xml file includes, among other things, the configuration of the vario
     <domain-controller>
         <remote security-realm="ManagementRealm">
             <discovery-options>
-                <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+                <static-discovery name="primary"
+                    protocol="${jboss.domain.master.protocol:remote+http}"
+                    host="${jboss.domain.master.address}"
+                    port="${jboss.domain.master.port:9990}"/>
             </discovery-options>
         </remote>
     </domain-controller>

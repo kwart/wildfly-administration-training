@@ -70,21 +70,20 @@ http://undertow.io/
 
 --
 * key features
-   * lightweight
+   * HTTP/2 support
    * HTTP Upgrade
    * Web Sockets
-   * Servlet 3.1
+   * Servlet 4.0
    * embeddable
-   * performance
    * flexibility 
 
 ???
-* Undertow is extremely lightweight, with the Undertow core jar coming in at under 1Mb. It is lightweight at runtime too, with a simple embedded server using less than 4Mb of heap space.
-* Support for HTTP upgrade, to allow multiple protocols to be multiplexed over the HTTP port.
-* Undertow provides full support for Web Sockets, including JSR-356 support.
-* Undertow provides support for Servlet 3.1, including support for embedded servlet. It is also possible to mix both Servlets and native undertow non-blocking handlers in the same deployment.
-* Undertow can be embedded in an application or run standalone with just a few lines of code.
-* An Undertow server is configured by chaining handlers together. It is possible to add as much or as little functionality as you need, so you don’t pay for what you are not using.
+- HTTP/2 Support -Undertow supports HTTP/2 out of the box, no overriding the boot class path required.
+- HTTP Upgrade Support - Support for HTTP upgrade, to allow multiple protocols to be multiplexed over the HTTP port.
+- Web Socket Support - Undertow provides full support for Web Sockets, including JSR-356 support.
+- Servlet 4.0 - Undertow provides support for Servlet 4.0, including support for embedded servlet. It is also possible to mix both Servlets and native undertow non-blocking handlers in the same deployment.
+- Embeddable - Undertow can be embedded in an application or run standalone with just a few lines of code.
+- Flexible - An Undertow server is configured by chaining handlers together. It is possible to add as much or as little functionality as you need, so you don’t pay for what you are not using.
 
 --
 * replaces JBoss Web (Tomcat)
@@ -187,6 +186,8 @@ The total amount of space used can be calculated by multiplying the buffer size 
   * `persistent-sessions` Session persistence configuration
   * `session-cookie` Session cookie configuration
 
+???
+* https://wildscribe.github.io/WildFly/17.0/subsystem/undertow/servlet-container/index.html
 ---
 
 ## Filters
@@ -201,7 +202,6 @@ The total amount of space used can be calculated by multiplying the buffer size 
 * `rewrite` A rewrite (or redirect) filter
 
 ???
-* https://wildscribe.github.io/WildFly/11.0/subsystem/undertow/servlet-container/index.html
 * IP access filter: https://stackoverflow.com/questions/31719044/is-there-any-way-to-restrict-access-by-configuring-in-wildfly
 --
 

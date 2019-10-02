@@ -11,12 +11,17 @@ Start WildFly docker containers without starting the WildFly in them.
 
 Use 3 terminal windows - one for each container:
 
-### First terminal - start domain controller - master host
+### 1st terminal - domain controller - master host
+
+Start Docker container `kwart/wildfly` - it creates a new virtual Linux OS environment with WildFly available in `/opt/wildfly`.
+
 ```bash
 docker run -it --rm --name wildfly-master kwart/wildfly
+```
 
-# Following steps are executed in the running container
+And within the running Docker container do following steps:
 
+```
 # add management users, so hosts can authenticate to domain controller
 wildfly/bin/add-user.sh -u slave1 -p slave
 wildfly/bin/add-user.sh -u slave2 -p slave
@@ -29,26 +34,55 @@ echo "Secret for both slaves is: $(echo -n slave | base64)"
 wildfly/bin/domain.sh --host-config=host-master.xml -b $MY_IP -bmanagement $MY_IP
 ```
 
-### 2nd and 3rd terminals - slave hosts
-Run following steps in 2nd terminal
+### 2nd terminal - slave host
 
+Run a new Docker container for the `slave1` host controller:
 ```
 docker run -it --rm --name wildfly-slave1 kwart/wildfly
+```
 
-# configure slave name - sed is used here to simplify automation
-sed -i 's#<host #<host name="slave1" #' wildfly/domain/configuration/host-slave.xml
+Configure and run the `slave1` in the container:
 
-# configure slave authentication
+```
+# configure slave authentication 
 wildfly/bin/jboss-cli.sh <<EOT
   embed-host-controller --host-config=host-slave.xml
-  /host=slave1/core-service=management/security-realm=ManagementRealm/server-identity=secret:write-attribute(name=value,value="c2xhdmU=")
+  /host=$HOSTNAME/core-service=management/security-realm=ManagementRealm/\
+      server-identity=secret:write-attribute(name=value,value="c2xhdmU=")
+  /host=$HOSTNAME:write-attribute(name=name, value=slave1)
 EOT
 
 # start the slave and provide master adress
-wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP -bmanagement $MY_IP -Djboss.domain.master.address=172.17.0.2
+wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
+    -bmanagement $MY_IP -Djboss.domain.master.address=172.17.0.2
 ```
 
+### 3rd terminal - another slave host
+
 Use the same steps for 3rd terminal, just replace the **`slave1`** value with **`slave2`**
+
+Run a new Docker container for the `slave2` host controller:
+
+```
+docker run -it --rm --name wildfly-slave2 kwart/wildfly
+```
+
+Configure and run the `slave2` in the container:
+
+```
+# configure slave authentication 
+wildfly/bin/jboss-cli.sh <<EOT
+  embed-host-controller --host-config=host-slave.xml
+  /host=$HOSTNAME/core-service=management/security-realm=ManagementRealm/\
+      server-identity=secret:write-attribute(name=value,value="c2xhdmU=")
+  /host=$HOSTNAME:write-attribute(name=name, value=slave2)
+EOT
+
+# start the slave and provide master adress
+wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
+    -bmanagement $MY_IP -Djboss.domain.master.address=172.17.0.2
+```
+
 
 ### Verify the domain is running
 Console window on master host should contain following log entries:
