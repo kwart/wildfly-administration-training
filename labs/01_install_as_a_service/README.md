@@ -57,7 +57,7 @@ To avoid clashes with other lab exercises, we will stop and disable the service.
 **How:**
 As a root run following commands:
 
-```bash```
+```bash
 systemctl stop wildfly
 systemctl disable wildfly
 ```
