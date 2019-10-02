@@ -371,6 +371,38 @@ https://wildscribe.github.io/
 ???
 
 * there is also a possibility to create snapshots
+---
+
+## Configuration backup into Git
+
+WildFly 14 / EAP 7.2 [introduced Git support](https://wildfly.org/news/2018/09/28/Git-History/) for configuration history
+* every change in the configuration is a commit;
+* use branches to develop in parallel;
+* create tags for stable points in your configuration;
+* pull configuration from a remote repository;
+* push configuration history to a remote repository;
+
+--
+
+```
+# run WildFly with config changes tracked in a Git repository
+bin/standalone.sh --git-repo=local --git-branch=my-branch
+
+# do some work on the WildFly configuration (in new terminal)
+bin/jboss-cli.sh -c <<EOT
+:take-snapshot(name="snapshot", comment="1st snapshot")
+/system-property=test:add(value="test123")
+/system-property=hello:add(value="world")
+:take-snapshot()
+EOT
+
+# list changes in the git repository
+git -C standalone log
+```
+
+???
+
+* there is also a possibility to create snapshots
 
 ---
 class: center, middle
