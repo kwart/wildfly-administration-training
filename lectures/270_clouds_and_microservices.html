@@ -89,7 +89,9 @@ bin/standalone.sh -c standalone-azure-ha.xml \
 
 ---
 
-## WildFly Swarm
+## Thorntail (WildFly Swarm)
+
+.font200.center[https://thorntail.io/]
 
 * framework based on WildFly
 * allows to create small, microservice-based applications
@@ -99,13 +101,15 @@ bin/standalone.sh -c standalone-azure-ha.xml \
   * Keycloak
 * online project generator
 
+---
+
 ### Packaging
 
 * Uberjar
 ```
 java -jar myapp-swarm.jar
 ```
---
+
 * Hollow JAR
 ```
 java -jar myapp-hollow-swarm.jar myapp.jar
@@ -114,8 +118,17 @@ java -jar myapp-hollow-swarm.jar myapp.jar
 ???
 A hollow JAR is similar to an uberjar, but includes only the runtime components, and does not include your application code.
 
-A hollow jar is suitable for deployment processes that involve Linux containers such as Docker. When using containers, place the runtime components in a container image lower in the image hierarchy—​which means it changes less often—​so that the higher layer which contains only your application code can be rebuilt more quickly.
+A hollow jar is suitable for deployment processes that involve Linux containers such as Docker. When using containers, place the runtime components in a container image lower in the image hierarchy-which means it changes less often-so that the higher layer which contains only your application code can be rebuilt more quickly.
 
+---
+
+## Quarkus.io
+
+.font200.center[https://quarkus.io/
+
+Supersonic Subatomic Java]
+
+.center[A Kubernetes Native Java stack tailored for GraalVM &amp; OpenJDK HotSpot, crafted from the best of breed Java libraries and standards]
 ---
 class: center, middle
 

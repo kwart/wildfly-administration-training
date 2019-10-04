@@ -141,16 +141,17 @@ EOT
 
 ## Let's Encrypt - Free Automatic Certificate Authority (CA)
 
-???
+.font200.center[https://letsencrypt.org/]
 
-https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli
+*Steps on the following slides are based on Farah 
+Juma's [blog post](https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli).*
 
 --
 
 ### Prerequisities
 
-* Use port 80
-  * WildFly has to be accessible on default http port for Let's encrypt domain name verification.
+* publicly available domain name
+* WildFly available on **http port 80**
 
 ```bash
 # Either create the redirct from port 80 to 8080
@@ -162,12 +163,24 @@ bin/standalone.sh -b 0.0.0.0 -bmanagement=0.0.0.0 \
 ```
 
 ???
+
+* WildFly has to be accessible on default http port for Let's encrypt domain name verification.
+
 ```
 # list nat rules:
 iptables -t nat -L --line-numbers
 
 # remove the 1st rule
 iptables -t nat -D PREROUTING 1
+```
+
+---
+
+## WildFly 18+ - process simplification - interactive wizard
+
+```
+# HTTPS for application interface
+security enable-ssl-http-server --interactive --lets-encrypt
 ```
 
 ---
@@ -219,7 +232,7 @@ security enable-ssl-management --key-store-name=www
 
 ```bash
 # Revoke the certificate
-/subsystem=elytron/key-store=host:revoke-certificate(alias=www, \
+/subsystem=elytron/key-store=www:revoke-certificate(alias=www, \
     reason=keyCompromise,certificate-authority-account=le-ca-account)
 
 # Check if a it's time for a renewal (cert expires in less than 30 days)  
@@ -288,7 +301,7 @@ bin/standalone.sh -c standalone-picketlink.xml
 --
 
 ```bash
-cd core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+/core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
 ```
 
 ---
