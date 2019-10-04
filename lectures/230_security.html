@@ -60,10 +60,8 @@ class: center, middle
 ## JBOSS1 - WildFly Administration
 
 ---
+# Agenda
 
-## Agenda
-
-* WildFly Security Manager
 * Legacy security
   * Security Domains (JAAS, Login modules)
   * Security Realms
@@ -74,6 +72,239 @@ class: center, middle
   * SASL authentication
   * Credential store - Securing sensitive strings
 * RBAC
+* WildFly Security Manager
+
+---
+## Legacy security
+
+* Security Domains in `/subsystem=security`
+  * mainly for defining security of deployed applications
+  * based on JAAS and its `LoginModule` interface
+* Security Realms in `/core-service=management/security-realm=*`
+  * mainly for configuration security of server management interfaces and remoting
+  * based on `CallbackHandler` implementations
+
+???
+* A security domain can delegate authentication to a security realm by using the "RealmDirect" login module.
+* A security realm can delegate authentication to a security domain by using "jaas" authentication configuration
+
+---
+
+## Security vault
+
+* storing/masking sensitive string
+
+```bash
+keytool -genseckey -alias vault -storetype jceks -keyalg AES -keysize 128 \
+   -storepass vault22 -keypass vault22 -keystore /home/student/vault/vault.keystore
+   -dname "CN=vault"
+
+bin/vault.sh -a passa -b exampleds -e `pwd` -i 22 -k /home/student/vault/vault.keystore \
+    -p vault22 -s 87654321 -v vault -x sa
+
+bin/jboss-cli.sh -c <<EOT
+/core-service=vault:add(vault-options=[("KEYSTORE_URL" => "/home/student/vault/vault.keystore"), \
+  ("KEYSTORE_PASSWORD" => "MASK-Ci5JS1kjxPX"), ("KEYSTORE_ALIAS" => "vault"), \
+  ("SALT" => "87654321"),("ITERATION_COUNT" => "22"), ("ENC_FILE_DIR" => "/home/student/vault/")])
+/subsystem=datasources/data-source=ExampleDS:write-attribute(name=password, \
+  value=expression "${VAULT::exampleds::passa::1}")
+EOT
+```
+---
+
+## Elytron security
+
+* new security framework
+* main areas:
+  * Authentication
+  * Authorization
+  * SSL / TLS
+  * Secure Credential Storage
+* stronger authentication mechanisms for both HTTP and SASL based authentication
+
+???
+* https://docs.jboss.org/author/display/WFLY/WildFly+Elytron+Security
+---
+
+## Credential reference
+
+
+```bash
+/subsystem=elytron/credential-store=test:add( \
+    create=true, modifiable=true, \
+    credential-reference={clear-text=123456}, \
+    location=cred-store.jceks, relative-to=jboss.server.config.dir)
+
+/subsystem=elytron/credential-store=test:add-alias(alias=alias-password,secret-value=password)
+```
+---
+
+## Let's Encrypt - Free Automatic Certificate Authority (CA)
+
+???
+
+https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli
+
+--
+
+### Prerequisities
+
+* Use port 80
+  * WildFly has to be accessible on default http port for Let's encrypt domain name verification.
+
+```bash
+# Either create the redirct from port 80 to 8080
+sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+
+# or start WildFly with default http/https ports (use root account)
+bin/standalone.sh -b 0.0.0.0 -bmanagement=0.0.0.0 \
+  -Djboss.http.port=80 -Djboss.https.port=443
+```
+
+???
+```
+# list nat rules:
+iptables -t nat -L --line-numbers
+
+# remove the 1st rule
+iptables -t nat -D PREROUTING 1
+```
+
+---
+
+## Let's Encrypt - Configure account
+
+```bash
+# Configure keystore for Let's Encrypt account
+/subsystem=elytron/key-store=letsencrypt:add(path=letsencrypt.keystore, \
+    relative-to=jboss.server.config.dir, \
+    credential-reference={clear-text=123456}, type=PKCS12)
+
+# Configure Let's Encrypt account
+/subsystem=elytron/certificate-authority-account=le-ca-account:add( \
+    alias=le-account,key-store=letsencrypt)
+```
+
+---
+
+## Let's Encrypt - Obtain a new certificate
+
+```bash
+# Ask Let’s Encrypt for a certificate
+/subsystem=elytron/key-store=www:add(path=www.keystore, \
+    relative-to=jboss.server.config.dir, \
+    credential-reference={clear-text=123456}, type=PKCS12)
+/subsystem=elytron/key-store=www:obtain-certificate( \
+    alias=www,domain-names=[www.wildfly-administration-training.xyz], \
+    certificate-authority-account=le-ca-account, \
+    agree-to-terms-of-service)
+```
+
+---
+
+## Let's Encrypt 
+
+### Configure HTTPs with the received certificate
+
+```bash
+# HTTPS for applications (port: 8443)
+security enable-ssl-http-server --key-store-name=www
+
+# HTTPS for management (port: 9993)
+security enable-ssl-management --key-store-name=www
+```
+
+--
+### Other operations
+
+```bash
+# Revoke the certificate
+/subsystem=elytron/key-store=host:revoke-certificate(alias=www, \
+    reason=keyCompromise,certificate-authority-account=le-ca-account)
+
+# Check if a it's time for a renewal (cert expires in less than 30 days)  
+/subsystem=elytron/key-store=host:should-renew-certificate(alias=www)
+
+```
+
+---
+
+## Let's Encrypt - Renewals
+
+* configure daily `cron` job with `jboss-cli.sh` execution
+
+```bash
+
+if (result.should-renew-certificate == true) of /subsystem=elytron/key-store=www:should-renew-certificate(alias=www)
+    /subsystem=elytron/key-store=$KEYSTORE:obtain-certificate(alias=$ALIAS,\
+      domain-names=[$DOMAIN], \
+      certificate-authority-account=$CA_ACCOUNT,agree-to-terms-of-service)  
+    /subsystem=elytron/key-manager=$KEY-MANAGER:init()
+end-if
+```
+
+---
+
+## Single SignOn - SAML Federation
+
+* PicketLink (included with the server / *deprecated*)
+* [KeyCloak](https://keycloak.org) / Red Hat SSO
+
+---
+# PicketLink SAML Federation
+
+Example configuration ready in the `docs/examples`
+
+```
+# copy profile to standalone config dir
+cp docs/examples/configs/standalone-picketlink.xml standalone/configuration/
+
+# run server with given profile
+bin/standalone.sh -c standalone-picketlink.xml
+
+# you will see some errors, but it's OK
+```
+
+---
+## RBAC
+
+* Authorizing management actions with Role Based Access Control
+
+```xml
+<management>
+...
+    <access-control provider="simple">
+        <role-mapping>
+            <role name="SuperUser">
+                <include>
+                    <user name="$local"/>
+                </include>
+            </role>
+        </role-mapping>
+    </access-control>
+</management>
+```
+
+--
+
+```bash
+cd core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+```
+
+---
+
+## RBAC roles
+
+* Four roles are not given permissions for "security sensitive" items:
+  * Monitor – a read-only role. Cannot modify any resource.
+  * Operator – Monitor permissions, plus can modify runtime state, but cannot modify anything that ends up in the persistent configuration. Could, for example, restart a server.
+  * Maintainer – Operator permissions, plus can modify the persistent configuration.
+  * Deployer – like a Maintainer, but with permission to modify persistent configuration constrained to resources that are considered to be "application resources". A deployment is an application resource. The messaging server is not. Items like datasources and JMS destinations are not considered to be application resources by default, but this is configurable.
+
+* Three roles are granted permissions for security sensitive items:
+  * SuperUser – has all permissions. Equivalent to a JBoss AS 7 administrator.
+  * Administrator – has all permissions except cannot read or write resources related to the administrative audit logging system.
+  * Auditor – can read anything. Can only modify the resources related to the administrative audit logging system.
 
 ---
 
@@ -146,19 +377,15 @@ The **`-secmgr`** argument of `jboss-modules.jar` enables the Security Manager.
 ```bash
 bin/standalone.sh -secmgr
 bin/domain.sh -secmgr
+```
 
+???
+```
 # similar for other jboss-modules based binaries
 # - jboss-cli
 # - appclient
 # - ...
 ```
-
---
-
-### Do not ...
-
-* **Don't specify `java.security.manager`** system property
-* Don't provide a policy file (`java.security.policy`)
 
 ---
 
@@ -268,155 +495,6 @@ bin/domain.sh -secmgr
 ## minimum-permissions
 * **always granted** permissions
 * deployments don't need to ask for them (in `permissions.xml`)
-
----
-## Legacy security
-
-* Security Domains in `/subsystem=security`
-  * mainly for defining security of deployed applications
-  * based on JAAS and its `LoginModule` interface
-* Security Realms in `/core-service=management/security-realm=*`
-  * mainly for configuration security of server management interfaces and remoting
-  * based on `CallbackHandler` implementations
-
-???
-* A security domain can delegate authentication to a security realm by using the "RealmDirect" login module.
-* A security realm can delegate authentication to a security domain by using "jaas" authentication configuration
-
----
-
-## Security vault
-
-* storing/masking sensitive string
-
-```bash
-keytool -genseckey -alias vault -storetype jceks -keyalg AES -keysize 128 \
-   -storepass vault22 -keypass vault22 -keystore /home/student/vault/vault.keystore
-   -dname "CN=localhost, OU=JBoss Middleware, O=Red Hat, L=Brno, C=CZ"
-
-bin/vault.sh -a passa -b exampleds -e `pwd` -i 22 -k /home/student/vault/vault.keystore \
-    -p vault22 -s 87654321 -v vault -x sa
-
-bin/jboss-cli.sh -c <<EOT
-/core-service=vault:add(vault-options=[("KEYSTORE_URL" => "/home/student/vault/vault.keystore"), \
-  ("KEYSTORE_PASSWORD" => "MASK-Ci5JS1kjxPX"), ("KEYSTORE_ALIAS" => "vault"), \
-  ("SALT" => "87654321"),("ITERATION_COUNT" => "22"), ("ENC_FILE_DIR" => "/home/student/vault/")])
-/subsystem=datasources/data-source=ExampleDS:write-attribute(name=password, \
-  value=expression "${VAULT::exampleds::passa::1}")
-EOT
-```
----
-
-## Elytron security
-
-* new security framework
-* main areas:
-  * Authentication
-  * Authorization
-  * SSL / TLS
-  * Secure Credential Storage
-* stronger authentication mechanisms for both HTTP and SASL based authentication
-
-???
-* https://docs.jboss.org/author/display/WFLY/WildFly+Elytron+Security
----
-
-## Credential reference
-
-
-
-```bash
-/subsystem=elytron/credential-store=cred-store-default:add(create=true, \
-    modifiable=true, relative-to=jboss.server.config.dir, 
-    credential-reference={clear-text=password}, case-sensitive=false, location=cred-store.jceks)
-/subsystem=elytron/credential-store=cred-store-default/alias=alias-password:add(secret-value=password)
-```
----
-
-## Logging for secuity
-
-```bash
-/subsystem=logging/console-handler=CONSOLE:write-attribute(name=level, value=ALL)
-/subsystem=logging/logger=org.jboss.security:add(level=ALL)
-/subsystem=logging/logger=org.jboss.as.security:add(level=ALL)
-/subsystem=logging/logger=org.picketbox:add(level=ALL)
-/subsystem=logging/logger=org.apache.catalina.authenticator:add(level=ALL)
-/subsystem=logging/logger=org.jboss.as.web.security:add(level=ALL)
-/subsystem=logging/logger=org.jboss.as.domain.management.security:add(level=ALL)
-/subsystem=logging/logger=org.wildfly.security:add(level=ALL)
-/subsystem=logging/logger=org.wildfly.elytron:add(level=ALL)
-```
----
-
-# Let's Encrypt - Free Automatic Certificate Authority (CA)
-
---
-
-```bash
-DOMAIN=wildfly.cacek.cz
-
-# generate Certificate by using embedded http server of the letsencrypt client
-letsencrypt certonly --standalone -d $DOMAIN
-
-# import private key to a keystore
-openssl pkcs12 -export -out /opt/keystore.p12 \
-  -in /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
-  -inkey /etc/letsencrypt/live/$DOMAIN/privkey.pem \
-  -password pass:pass.123
-
-# change the SSL configuration in WildFly
-bin/jboss-cli.sh <<EOT
-  embed-server
-  /core-service=management/security-realm=ApplicationRealm/server-identity=ssl:remove
-  /core-service=management/security-realm=ApplicationRealm/server-identity=ssl:add( \
-    keystore-password=pass.123, keystore-path="/opt/keystore.p12", \
-    keystore-provider=PKCS12, protocol=TLS)
-EOT
-
-# Run WildFly
-bin/standalone.sh -b 0.0.0.0
-```
----
-## RBAC
-
-* Authorizing management actions with Role Based Access Control
-
-```xml
-<management>
-...
-    <access-control provider="simple">
-        <role-mapping>
-            <role name="SuperUser">
-                <include>
-                    <user name="$local"/>
-                </include>
-            </role>
-        </role-mapping>
-    </access-control>
-</management>
-```
-
---
-
-```bash
-cd core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
-```
-
----
-
-## RBAC roles
-
-* Four roles are not given permissions for "security sensitive" items:
-  * Monitor – a read-only role. Cannot modify any resource.
-  * Operator – Monitor permissions, plus can modify runtime state, but cannot modify anything that ends up in the persistent configuration. Could, for example, restart a server.
-  * Maintainer – Operator permissions, plus can modify the persistent configuration.
-  * Deployer – like a Maintainer, but with permission to modify persistent configuration constrained to resources that are considered to be "application resources". A deployment is an application resource. The messaging server is not. Items like datasources and JMS destinations are not considered to be application resources by default, but this is configurable.
-
-* Three roles are granted permissions for security sensitive items:
-  * SuperUser – has all permissions. Equivalent to a JBoss AS 7 administrator.
-  * Administrator – has all permissions except cannot read or write resources related to the administrative audit logging system.
-  * Auditor – can read anything. Can only modify the resources related to the administrative audit logging system.
-
 
 ---
 
