@@ -1,38 +1,42 @@
-# Lab - WildFly - install as a service
+# Lab - JBoss EAP - install as a service
 
 ## Task 1 - install service
 
 **What:**
-Install the WildFly server as a Linux (systemd) service.
+Install the JBoss EAP as a Linux (systemd) service.
 
 **How:**
 
-Steps taken from `docs/contrib/scripts/systemd/README`, run them as `root` (`sudo su -`)
+Steps and service files taken from the WildFly installation (check `docs/contrib/scripts/systemd/README`).
 
-```
-# Create a wildfly user
-groupadd -r wildfly
-useradd -r -g wildfly -d /opt/wildfly -s /sbin/nologin wildfly
+You can also find them in the WildFly-core GitHub repository:
+https://github.com/wildfly/wildfly-core/tree/12.0.0.Final/core-feature-pack/src/main/resources/content/docs/contrib/scripts
 
-# Install WildFly
-unzip /home/student/wildfly-labs-resources/wildfly-17.0.1.Final.zip -d /opt
-mv /opt/wildfly-17.0.1.Final /opt/wildfly
-chown -R wildfly:wildfly /opt/wildfly
-cd /opt/wildfly/docs/contrib/scripts/systemd
+Run following them as the `root` (`sudo su -`)
+
+```bash
+# Create the jboss user/group
+groupadd -r jboss
+useradd -r -g jboss -d /opt/jboss -s /sbin/nologin jboss
+
+# Install JBoss EAP
+unzip /home/student/wildfly-labs-resources/jboss-eap-7.3.0.zip -d /opt
+ln -s /opt/jboss-eap-7.3 /opt/jboss
+chown -R jboss:jboss /opt/jboss
 
 # Configure systemd
-mkdir /etc/wildfly
-cp wildfly.conf /etc/wildfly/
-cp wildfly.service /etc/systemd/system/
-cp launch.sh /opt/wildfly/bin/
-chmod +x /opt/wildfly/bin/launch.sh
+cd /home/student/wildfly-administration-training/labs/01_install_as_a_service/systemd
+mkdir /etc/jboss
+cp jboss.conf /etc/jboss/
+cp jboss.service /etc/systemd/system/
+cp launch.sh /opt/jboss/bin/
 
 # Start and enable service
-systemctl start wildfly.service
-systemctl enable wildfly.service
+systemctl start jboss.service
+systemctl enable jboss.service
 ```
 
-Check if the WildFly is running by opening URL: http://localhost:8080/
+Check if the JBoss EAP is running by opening URL: http://localhost:8080/
 
 ## Task 2 - reboot and check the server
 
@@ -40,14 +44,14 @@ Check if the WildFly is running by opening URL: http://localhost:8080/
 We want to be sure the application server continues to work after the system restarts.
 
 **How:**
-Reboot the VM and check if the WildFly is started automatically.
+Reboot the VM and check if the JBoss EAP is started automatically.
 
 You can use following command line to reboot:
 ```bash
 sudo reboot
 ```
 
-Check again if the WildFly is running by opening URL: http://localhost:8080/
+Check again if the JBoss EAP is running by opening URL: http://localhost:8080/
 
 ## Task 3 - disable the service
 
@@ -58,6 +62,6 @@ To avoid clashes with other lab exercises, we will stop and disable the service.
 As a root run following commands:
 
 ```bash
-systemctl stop wildfly
-systemctl disable wildfly
+systemctl stop jboss
+systemctl disable jboss
 ```

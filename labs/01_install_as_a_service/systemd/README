@@ -1,0 +1,24 @@
+= How to configure JBoss EAP as a systemd service
+
+== Create a wildfly user
+
+    # groupadd -r jboss
+    # useradd -r -g jboss -d /opt/jboss -s /sbin/nologin jboss
+
+== Install JBoss EAP
+
+    # unzip /home/student/wildfly-labs-resources/jboss-eap-7.3.0.zip -d /opt
+    # ln -s /opt/jboss-eap-7.3 /opt/jboss
+    # chown -R jboss:jboss /opt/jboss
+
+== Configure systemd
+
+    # mkdir /etc/jboss
+    # cp jboss.conf /etc/jboss/
+    # cp jboss.service /etc/systemd/system/
+    # cp launch.sh /opt/jboss/bin/
+
+== Start and enable
+
+    # systemctl start jboss.service
+    # systemctl enable jboss.service

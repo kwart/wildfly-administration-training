@@ -6,9 +6,17 @@
 * bridged network mode
 
 ```
+# remove packagekit (Graphical updating tool)
+yum remove -y PackageKit*
+
 yum update -y
 yum install -y yum-plugin-priorities epel-release
 yum repolist
+
+# Prerequisities to install Virtual Box Guest Additions
+yum install -y dkms gcc make kernel-devel
+yum install -y terminator geany nghttp2 git tree
+
 
 # https://docs.docker.com/engine/installation/linux/docker-ce/centos/#install-docker-ce
 yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -30,18 +38,13 @@ systemctl enable docker
 groupadd docker
 sudo usermod -aG docker student
 
-yum install -y dkms gcc make kernel-devel
-# and install Virtual Box Guest Additions
 
-yum install -y terminator geany nghttp2 git tree
-
-# remove packagekit (Graphical updating tool)
-yum remove PackageKit*
 
 # install Maven (CentOS 7 contains an old one which fails to compile quickstarts)
 cd /opt
-curl -s http://mirror.dkm.cz/apache/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz | sudo tar xzvf -
-sudo ln -s /opt/apache-maven-3.6.2/bin/mvn /usr/bin/mvn
+curl -s http://mirror.hosting90.cz/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | sudo tar xzvf -
+rm -f /usr/bin/mvn
+ln -s /opt/apache-maven-3.6.3/bin/mvn /usr/bin/mvn
 
 echo "127.0.0.1 my-server.my-company.example" >> /etc/hosts
 
