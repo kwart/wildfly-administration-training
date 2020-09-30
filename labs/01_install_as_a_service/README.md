@@ -22,7 +22,7 @@ useradd -r -g jboss -d /opt/jboss -s /sbin/nologin jboss
 # Install JBoss EAP
 unzip /home/student/wildfly-labs-resources/jboss-eap-7.3.0.zip -d /opt
 ln -s /opt/jboss-eap-7.3 /opt/jboss
-chown -R jboss:jboss /opt/jboss
+chown -R jboss:jboss /opt/jboss*
 
 # Configure systemd
 cd /home/student/wildfly-administration-training/labs/01_install_as_a_service/systemd

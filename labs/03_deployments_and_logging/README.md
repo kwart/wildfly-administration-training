@@ -1,4 +1,4 @@
-# Lab - WildFly - Deployments and logging
+# Lab - JBoss EAP - Deployments and logging
 
 ## Task 1: Build and Deploy test application
 
@@ -16,7 +16,7 @@ cd ~/wildfly-administration-training/applications/hello
 mvn install
 ```
 
-* deploy the resulting WAR file `target/hello.war` - copy it to WildFly directory `standalone/deployments`
+* deploy the resulting WAR file `target/hello.war` - copy it to JBoss EAP directory `standalone/deployments`
 * check if the application is deployed in browser:
   * http://localhost:8080/hello/
   * review the output in the console window

@@ -1,14 +1,24 @@
-# Lab - WildFly - CLI configuration
+# Lab - JBoss EAP - CLI configuration
+
+## Task 0: Install JBoss EAP from the ZIP
+
+As `student` user unzip the EAP in home directory:
+
+```
+unzip ~/wildfly-labs-resources/jboss-eap-7.3.0.zip -d ~/
+cd ~/jboss-eap-7.3
+```
 
 ## Task 1: Use the Management console
 
 **What:** use the management console to view server log files
 
 **How:**
-1. Use `bin/add-user.sh` script to add a new Management User
+1. Use `bin/add-user.sh` script to add a new **Management User**
   * username: `student`
   * password: `student`
   * groups: `[ ]` (empty)
+  * *we don't need the new user for host controller connections* 
 2. Start the standalone server
   * `bin/standalone.sh`
 3. Open Management console in a browser:
@@ -61,7 +71,7 @@ curl http://localhost:8080/
 
 **How:**
 
-* Make sure the WildFly server is stopped (if not, press `Ctrl-C` in its console window)
+* Make sure the JBoss EAP is stopped (if not, press `Ctrl-C` in its console window)
 * Start JBoss CLI
 ```bash
 bin/jboss-cli.sh
@@ -70,7 +80,7 @@ bin/jboss-cli.sh
 * Run `embed-server` and use it
 
 ```bash
-# start WildFly as an embedded server
+# start JBoss as an embedded server
 embed-server
 
 # add a system property

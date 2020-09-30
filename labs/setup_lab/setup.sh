@@ -16,3 +16,5 @@ popd
 
 docker pull postgres:10.1-alpine
 docker pull kwart/wildfly
+docker pull letsencrypt/pebble
+docker pull letsencrypt/pebble-challtestsrv

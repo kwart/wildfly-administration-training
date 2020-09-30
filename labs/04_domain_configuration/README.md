@@ -1,51 +1,51 @@
-# Lab - WildFly Managed Domain
+# Lab - JBoss EAP Managed Domain
 
 ## Task 1: Configure servers on 3 machines as one domain 
 
 **What:** 
-We will use 3 machines (Docker containers) with WildFly installed. We will
-join them into one WildFly managed domain and configure servers on them.
+We will use 3 machines (Docker containers) with JBoss EAP installed. We will
+join them into one managed domain and configure servers on them.
 
 **How:**
-Start WildFly docker containers without starting the WildFly in them.
+Start JBoss EAP docker containers without starting the EAP in them.
 
 Use 3 terminal windows - one for each container:
 
 ### 1st terminal - domain controller - master host
 
-Start Docker container `kwart/wildfly` - it creates a new virtual Linux OS environment with WildFly available in `/opt/wildfly`.
+Start Docker container `kwart/jboss-eap` - it creates a new virtual Linux OS environment with JBoss available in `/opt/jboss-eap`.
 
 ```bash
-docker run -it --rm --name wildfly-master kwart/wildfly
+docker run -it --rm --name jboss-master kwart/jboss-eap
 ```
 
 And within the running Docker container do following steps:
 
 ```
 # add management users, so hosts can authenticate to domain controller
-wildfly/bin/add-user.sh -u slave1 -p slave
-wildfly/bin/add-user.sh -u slave2 -p slave
+jboss-eap/bin/add-user.sh -u slave1 -p slave
+jboss-eap/bin/add-user.sh -u slave2 -p slave
 
 # print useful information for slaves
 echo "Master node IP is: $MY_IP"
 echo "Secret for both slaves is: $(echo -n slave | base64)"
 
 # start domain controller and bind interfaces to correct IP adresses
-wildfly/bin/domain.sh --host-config=host-master.xml -b $MY_IP -bmanagement $MY_IP
+jboss-eap/bin/domain.sh --host-config=host-master.xml -b $MY_IP -bmanagement $MY_IP
 ```
 
 ### 2nd terminal - slave host
 
 Run a new Docker container for the `slave1` host controller:
 ```
-docker run -it --rm --name wildfly-slave1 kwart/wildfly
+docker run -it --rm --name jboss-slave1 kwart/jboss-eap
 ```
 
 Configure and run the `slave1` in the container:
 
 ```
 # configure slave authentication 
-wildfly/bin/jboss-cli.sh <<EOT
+jboss-eap/bin/jboss-cli.sh <<EOT
   embed-host-controller --host-config=host-slave.xml
   /host=$HOSTNAME/core-service=management/security-realm=ManagementRealm/\
       server-identity=secret:write-attribute(name=value,value="c2xhdmU=")
@@ -53,7 +53,7 @@ wildfly/bin/jboss-cli.sh <<EOT
 EOT
 
 # start the slave and provide master adress
-wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
+jboss-eap/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
     -bmanagement $MY_IP -Djboss.domain.master.address=172.17.0.2
 ```
 
@@ -64,14 +64,14 @@ Use the same steps for 3rd terminal, just replace the **`slave1`** value with **
 Run a new Docker container for the `slave2` host controller:
 
 ```
-docker run -it --rm --name wildfly-slave2 kwart/wildfly
+docker run -it --rm --name jboss-slave2 kwart/jboss-eap
 ```
 
 Configure and run the `slave2` in the container:
 
 ```
 # configure slave authentication 
-wildfly/bin/jboss-cli.sh <<EOT
+jboss-eap/bin/jboss-cli.sh <<EOT
   embed-host-controller --host-config=host-slave.xml
   /host=$HOSTNAME/core-service=management/security-realm=ManagementRealm/\
       server-identity=secret:write-attribute(name=value,value="c2xhdmU=")
@@ -79,7 +79,7 @@ wildfly/bin/jboss-cli.sh <<EOT
 EOT
 
 # start the slave and provide master adress
-wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
+jboss-eap/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
     -bmanagement $MY_IP -Djboss.domain.master.address=172.17.0.2
 ```
 
@@ -87,8 +87,8 @@ wildfly/bin/domain.sh --host-config=host-slave.xml -b $MY_IP \
 ### Verify the domain is running
 Console window on master host should contain following log entries:
 ```
-[Host Controller] 21:34:23,983 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 39) WFLYHC0019: Registered remote slave host "slave1", JBoss WildFly Full 17.0.1.Final (WildFly 9.0.2.Final)
-[Host Controller] 21:38:31,869 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 39) WFLYHC0019: Registered remote slave host "slave2", JBoss WildFly Full 17.0.1.Final (WildFly 9.0.2.Final)
+[Host Controller] 12:46:09,262 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 2) WFLYHC0019: Registered remote slave host "slave1", JBoss JBoss EAP 7.3.0.GA (WildFly 10.1.2.Final-redhat-00001)
+[Host Controller] 12:47:02,646 INFO  [org.jboss.as.domain.controller] (Host Controller Service Threads - 2) WFLYHC0019: Registered remote slave host "slave2", JBoss JBoss EAP 7.3.0.GA (WildFly 10.1.2.Final-redhat-00001)
 ```
 
 ## Task 2: Deploy application to domain

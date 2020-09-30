@@ -15,13 +15,12 @@ yum repolist
 
 # Prerequisities to install Virtual Box Guest Additions
 yum install -y dkms gcc make kernel-devel
-yum install -y terminator geany nghttp2 git tree
+yum install -y terminator geany nghttp2 git tree wireshark-gnome
 
 
 # https://docs.docker.com/engine/installation/linux/docker-ce/centos/#install-docker-ce
-yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum install -y docker-ce
+yum install -y docker-ce docker-compose
 cat <<EOT >/etc/docker/daemon.json
 {
   "storage-driver": "devicemapper",
@@ -37,7 +36,7 @@ systemctl enable docker
 
 groupadd docker
 sudo usermod -aG docker student
-
+sudo usermod -aG wireshark student
 
 
 # install Maven (CentOS 7 contains an old one which fails to compile quickstarts)

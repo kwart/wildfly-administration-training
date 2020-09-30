@@ -1,6 +1,6 @@
-# Lab - WildFly - JDBC drivers and datasources
+# Lab - JBoss EAP - JDBC drivers and datasources
 
-## Task 1: Install the PostgreSQL JDBC driver as a WildFly module
+## Task 1: Install the PostgreSQL JDBC driver as a JBoss module
 
 **What:** Download JDBC driver and add it as a module.
 
@@ -11,14 +11,14 @@
 ```
 # the CLI doesn't to be connected to a running server. This is a local CLI command:
 module add --name=com.postgresql \
-  --resources=/home/student/postgresql-42.1.4.jar \
-  --dependencies=javax.api,javax.transaction.api
+  --dependencies=javax.api,javax.transaction.api \
+  --resources=/home/student/postgresql-42.1.4.jar
 ```
 
 * Check if the module was created by looking into modules directory:
   * it should contain 2 files (the driver JAR and `module.xml`)
 ```
-ls wildfly-17.0.1.Final/modules/com/postgresql/main/
+ls jboss-eap-7.3/modules/com/postgresql/main/
 ```
 
 ## Task 2: Add a datasource
