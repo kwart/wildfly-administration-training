@@ -88,9 +88,11 @@ class: center, middle
 * A security domain can delegate authentication to a security realm by using the "RealmDirect" login module.
 * A security realm can delegate authentication to a security domain by using "jaas" authentication configuration
 
+Jan Kalina's security presentation
+https://www.slideshare.net/JanKalina/securing-java-ee-apps-using-wildfly-elytron
 ---
 
-## Security vault
+## Legacy password store: Security vault
 
 * storing/masking sensitive string
 
@@ -119,14 +121,14 @@ EOT
   * Authentication
   * Authorization
   * SSL / TLS
-  * Secure Credential Storage
+  * Passwords
 * stronger authentication mechanisms for both HTTP and SASL based authentication
 
 ???
 * https://docs.jboss.org/author/display/WFLY/WildFly+Elytron+Security
 ---
 
-## Credential reference
+## Elytron password store: Credential reference
 
 
 ```bash
@@ -139,14 +141,47 @@ EOT
 ```
 ---
 
-## Let's Encrypt - Free Automatic Certificate Authority (CA)
+background-image: url(images/security_compare_legacy_elytron.png)
 
-.font200.center[https://letsencrypt.org/]
+???
+http://darranl.blogspot.com/2017/07/wildfly-elytron-principal-transformers.html
 
-*Steps on the following slides are based on Farah 
-Juma's [blog post](https://developer.jboss.org/people/fjuma/blog/2018/08/31/obtaining-certificates-from-lets-encrypt-using-the-wildfly-cli).*
+---
 
+## Elytron: JBoss CLI `security` commands
+
+### TLS (HTTPs)
+* `enable-ssl-http-server` / `disable-ssl-http-server`
+* `enable-ssl-management` / `disable-ssl-management`
+
+### Authentication
+* `enable-http-auth-http-server` / `disable-http-auth-http-server`
+* `enable-http-auth-management` / `disable-http-auth-management`
+
+### SASL
+* `enable-sasl-management` / `disable-sasl-management`
+* `reorder-sasl-management`
+
+---
+## Elytron: JBoss CLI security sample commands
+
+```bash
+# Configure a new security domain for web-app authentication (property-file-based)
+security enable-http-auth-http-server \
+   --security-domain=training \
+   --mechanism=BASIC \
+   --new-auth-factory-name=trainingAuthFactory \
+   --exposed-realm="My Realm" \
+   --new-security-domain-name=trainingDomain \
+   --user-properties-file=/tmp/users.properties
+
+# HTTPS for application interface
+security enable-ssl-http-server --interactive --lets-encrypt
+
+```
 --
+
+## Let's Encrypt certificates
 
 ### Prerequisities
 
@@ -154,34 +189,17 @@ Juma's [blog post](https://developer.jboss.org/people/fjuma/blog/2018/08/31/obta
 * WildFly available on **http port 80**
 
 ```bash
-# Either create the redirct from port 80 to 8080
-sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
-
-# or start WildFly with default http/https ports (use root account)
+# WildFly with default http/https ports (use root account!)
 bin/standalone.sh -b 0.0.0.0 -bmanagement=0.0.0.0 \
   -Djboss.http.port=80 -Djboss.https.port=443
 ```
 
-???
-
-* WildFly has to be accessible on default http port for Let's encrypt domain name verification.
-
-```
-# list nat rules:
-iptables -t nat -L --line-numbers
-
-# remove the 1st rule
-iptables -t nat -D PREROUTING 1
-```
-
 ---
 
-## WildFly 18+ - process simplification - interactive wizard
 
-```
-# HTTPS for application interface
-security enable-ssl-http-server --interactive --lets-encrypt
-```
+class: center, middle
+
+# You can choose the verbose way too!
 
 ---
 
@@ -258,10 +276,10 @@ end-if
 
 ---
 
-## Single SignOn - SAML Federation
+## Single SignOn
 
-* PicketLink (included with the server / *deprecated*)
-* [KeyCloak](https://keycloak.org) / Red Hat SSO
+* PicketLink (included with the server / *deprecated*)  - SAML
+* [KeyCloak](https://keycloak.org) / Red Hat SSO - SAML, OpenID Connect
 
 ---
 # PicketLink SAML Federation
