@@ -89,114 +89,10 @@ class: center, middle
 JMS destinations, along with JMS connection factories, are JMS administrative objects. Destinations are used by JMS clients for both producing and consuming messages.
 
 ---
-## Apache ActiveMQ Artemis - Messaging system in WildFly
-
-* available in Full and Full-HA profiles
-* provides JMS API implementation 
-  * it's just a facade on the top of the Artemis Core API
-
---
-
-### History
-
-* joins 2 projects
-  * HornetQ (WildFly &lt; 10)
-  * Apache ActiveMQ
-* introduced in WidFly 10 / EAP 7.0
-  * backward compatible with HornetQ 
-  
----
-```xml
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
-    <server name="default">
-*       <cluster password="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
-        <security-setting name="#">
-            <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
-        </security-setting>
-        <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10" redistribution-delay="1000"/>
-        <http-connector name="http-connector" socket-binding="http" endpoint="http-acceptor"/>
-        <http-connector name="http-connector-throughput" socket-binding="http" endpoint="http-acceptor-throughput">
-            <param name="batch-delay" value="50"/>
-        </http-connector>
-        <in-vm-connector name="in-vm" server-id="0">
-            <param name="buffer-pooling" value="false"/>
-        </in-vm-connector>
-        <http-acceptor name="http-acceptor" http-listener="default"/>
-        <http-acceptor name="http-acceptor-throughput" http-listener="default">
-            <param name="batch-delay" value="50"/>
-            <param name="direct-deliver" value="false"/>
-        </http-acceptor>
-        <in-vm-acceptor name="in-vm" server-id="0">
-            <param name="buffer-pooling" value="false"/>
-        </in-vm-acceptor>
-*       <broadcast-group name="bg-group1" jgroups-channel="activemq-cluster" connectors="http-connector"/>
-*       <discovery-group name="dg-group1" jgroups-channel="activemq-cluster"/>
-*       <cluster-connection name="my-cluster" address="jms" connector-name="http-connector" discovery-group="dg-group1"/>
-        <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
-        <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
-        <connection-factory name="InVmConnectionFactory" entries="java:/ConnectionFactory" connectors="in-vm"/>
-        <connection-factory name="RemoteConnectionFactory" entries="java:jboss/exported/jms/RemoteConnectionFactory" connectors="http-connector" ha="true" block-on-acknowledge="true" reconnect-attempts="-1"/>
-        <pooled-connection-factory name="activemq-ra" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory" connectors="in-vm" transaction="xa"/>
-    </server>
-</subsystem>
-```
-???
-* highlighted lines only configured in Full-HA
-  * some other have slight changes in element attributes
-
----
-
-## Connectors and Acceptors
-
-* Connectors
-  * used by clients to connect to WildFly JMS server
-  * define the transport and connection parameters
-* Acceptors
-  * connector's counterpart on server
-  * defines connection types accepted by server
-
---
-
-### Types: `*-connector` / `*-acceptor`
-
-* `in-vm` - communication with local clients in the same JVM
-* `remote` - for remote clients - uses Netty
-* `http` - for remote clients - uses Undertow
-
-???
-There are three kind of connectors that can be used to connect to WildFly JMS Server
-
-* in-vm-connector can be used by a local client (i.e. one running in the same JVM as the server)
-* remote-connector can be used by a remote client (and uses Netty over TCP for the communication)
-* http-connector can be used by a remote client (and uses Undertow Web Server to upgrade from a HTTP connection)
-
----
-
-## Connection factories
-* used by clients to make connections to the server
-* reference connectors
-* types
-  * `connection-factory`
-  * `pooled-connection-factory`
-  * *`legacy-connection-factory` - HornetQ factory*
-* remote usage (`connection-factory`)
-  * JNDI name prefix *"java:jboss/exported"*
-
-???
-* https://docs.jboss.org/author/display/WFLY/Messaging+configuration#Messagingconfiguration-JMSConnectionFactories
-* Only JNDI names bound in the "java:jboss/exported" namespace are available to remote clients.  If a connection-factory has an entry bound in the "java:jboss/exported" namespace a remote client would look-up the connection-factory using the text after "java:jboss/exported".  For example, the "RemoteConnectionFactory" is bound by default to "java:jboss/exported/jms/RemoteConnectionFactory" which means a remote client would look-up this connection-factory using "jms/RemoteConnectionFactory".  A pooled-connection-factory should not have any entry bound in the "java:jboss/exported" namespace because a pooled-connection-factory is not suitable for remote clients.
-
---
-
-### The pooled-connection factory
-* only available to local clients, but may reference a remote server
-* configurable pool - better performance
-* usage:
-  * in MDB (inbound)
-  * JNDI lookup (outbound - only for sending messages)
-
----
 ## JMS Queues and Topics
+
+* durability can be enabled
+  * messages then survive server restarts
 
 ### JBoss CLI
 ```bash
@@ -207,20 +103,6 @@ jms-queue add --queue-address=myQueue \
   --entries=[jms/queue/myQueue java:jboss/exported/jms/queue/myQueue]
 ```
 
---
-
-### Result
-```xml
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:2.0">
-  <server name="default">
-...
-    <jms-queue name="myQueue"
-               entries="jms/queue/myQueue java:jboss/exported/jms/queue/myQueue" />
-    <jms-topic name="myTopic"
-               entries="jms/topic/myTopic java:jboss/exported/jms/topic/myTopict" />
-...
-</subsystem>
-```
 ---
 ## Special queues
 
@@ -334,57 +216,6 @@ What to do with messages sent to given address(es)
 
 ???
 - invoke management operations by sending management messages to the management address
----
-
-## Transport security - SSL/TLS
-
-* `http-connector` / `http-acceptor`
-  * `https` connector in Undertow subsystem (OOTB)
-  * `ssl` identity in `ApplicationRealm` security realm configuration (OOTB)
-  * use `https` listener in `http-listener` attribute of `http-acceptor`
-  * add acceptor parameter `ssl-enabled=true`
-* `remote-connector`
-  * configuration as acceptor parameters
-      * keystore, truststore, protocol, ...
-      * acceptor parameter `ssl-enabled=true`
-
-???
-* https://stackoverflow.com/a/42670816/653069
-* https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.0/html-single/configuring_messaging/#securing_a_remote_connector
-
----
-
-## Persistence
-
-* Artemis handles persistence itself
-  * high performance journal
-  * optimized for messaging
-* journals - pluggable API, shipped with 2 implementations
-  * Java NIO
-  * Linux Asynchronous IO (`libaio`)
-      * Kernel 2.6+
-      * FS: ext2, ext3, ext4, jfs, xfs
-
-???
-* https://docs.jboss.org/author/display/WFLY/AIO+-+NIO+for+messaging+journal
-
-Apache ActiveMQ Artemis ships with a high performance journal. Since Apache ActiveMQ Artemis handles its own persistence, rather than relying on a database or other 3rd party persistence engine it is very highly optimised for the specific messaging use cases. The majority of the journal is written in Java, however we abstract out the interaction with the actual file system to allow different pluggable implementations.
-
-Apache ActiveMQ Artemis ships with two implementations:
-
-Java NIO.
-The first implementation uses standard Java NIO to interface with the file system. This provides extremely good performance and runs on any platform where there's a Java 6+ runtime.
-
-Linux Asynchronous IO
-The second implementation uses a thin native code wrapper to talk to the Linux asynchronous IO library (AIO). With AIO, Apache ActiveMQ Artemis will be called back when the data has made it to disk, allowing us to avoid explicit syncs altogether and simply send back confirmation of completion when AIO informs us that the data has been persisted.
-
-Using AIO will typically provide even better performance than using Java NIO.
-
-The AIO journal is only available when running Linux kernel 2.6 or later and after having installed libaio (if it's not already installed).
-
-Also, please note that AIO will only work with the following file systems: ext2, ext3, ext4, jfs, xfs. With other file systems, e.g. NFS it may appear to work, but it will fall back to a slower synchronous behaviour. Don't put the journal on a NFS share!
-
-One point that should be added is that AIO doesn't work well with encrypted partitions, thus you have to move to NIO on those.
 
 ---
 class: center, middle

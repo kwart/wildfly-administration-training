@@ -57,20 +57,16 @@ class: center, middle
 
 ## Java EE deployments
 
+*The deployment are **ZIP** archives.*
+
 * **WAR** - web application
 * **JAR** - library, EJBs
 * **EAR** - enterprise application
 * **RAR** - resource adapter
 
 --
-
-*The deployment are **ZIP** archives.*
-
---
-
-### JBoss Specific
-* [CLI](https://developer.jboss.org/wiki/CLIDeploymentArchive) - contains JBoss CLI deploy script
-* ...
+* deployment types can be also JBoss specific - e.g. CLI scripts
+  * https://developer.jboss.org/wiki/CLIDeploymentArchive
 
 ???
 * *-ds.xml, -jms.xml
@@ -231,11 +227,11 @@ Automatic dependencies can be excluded through the use of jboss-deployment-struc
 ## Application Deployment Phases
 * deploy
 * redeploy
-  * Some types of configuration changes need applications to be redeploy. The server *does not* report the redeploy is required in such cases!
 * undeploy
 
 ???
 
+* Some types of configuration changes need applications to be redeploy. The server *does not* report the redeploy is required in such cases!
 * https://docs.jboss.org/author/display/WFLY/Application+deployment
 
 --
@@ -356,7 +352,7 @@ DESCRIPTION
 
 --
 * Developers choose what information will be logged
-  * DevOps have to read the messages and find their meaning
+  * Admins have to read the messages and find their meaning
 
 ---
 
@@ -414,20 +410,14 @@ DESCRIPTION
 ---
 ## Log Levels
 
-* ALL
-* FINEST
-* FINER
-* TRACE
-* DEBUG
-* FINE
-* CONFIG
-* INFO
-* WARN
-* WARNING
-* ERROR
-* SEVERE
-* FATAL
-* OFF
+* disabled: `OFF`
+
+* errors: **`FATAL`, `ERROR`**, `SEVERE`, 
+* warnings: **`WARN`**, `WARNING`,
+* standard messages: **`INFO`**,
+* debugging: **`DEBUG`**, `CONFIG`, 'FINE`, `TRACE`, `FINER`, `FINEST`
+
+* full: `ALL`
 
 ???
 * taken from Management Console
@@ -470,46 +460,16 @@ DESCRIPTION
 
 ## Configuring loggers
 
-### ROOT logger
+```bash
+# don't filter levels in the CONSOLE handler
+/subsystem=logging/console-handler=CONSOLE:undefine-attribute(name=level)
 
----
-## Audit-Log
+# Set ROOT logger level to DEBUG
+/subsystem=logging/root-logger=ROOT:write-attribute(name=level, value=DEBUG)
 
-### (Legacy) Security auditing
+# Log all messages from `org.wildfly.security` category
+/subsystem=logging/logger=org.wildfly.security:add(level=ALL)
 
-```adoc
-/subsystem=logging/periodic-rotating-file-handler=AUDIT:add( \
-    level=TRACE, append=true, suffix=".yyyy-MM-dd", \
-    file={"relative-to"=>"jboss.server.log.dir", "path"=>"audit.log"}, \
-    formatter="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n")
-/subsystem=logging/logger=org.jboss.security.audit:add(level=TRACE,handlers=[AUDIT])
-
-```
-
---
-
-### Management auditlog
-
-```adoc
-/core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
-```
-
-???
-
-```adoc
-<audit-log>
-    <formatters>
-        <json-formatter name="json-formatter"/>
-    </formatters>
-    <handlers>
-        <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
-    </handlers>
-    <logger log-boot="true" log-read-only="false" enabled="false">
-        <handlers>
-            <handler name="file"/>
-        </handlers>
-    </logger>
-</audit-log>
 ```
 ---
 class: center, middle
