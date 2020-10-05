@@ -22,7 +22,6 @@ useradd -r -g jboss -d /opt/jboss -s /sbin/nologin jboss
 # Install JBoss EAP
 unzip /home/student/wildfly-labs-resources/jboss-eap-7.3.0.zip -d /opt
 ln -s /opt/jboss-eap-7.3 /opt/jboss
-chown -R jboss:jboss /opt/jboss*
 
 # Configure systemd
 cd /home/student/wildfly-administration-training/labs/01_install_as_a_service/systemd
@@ -30,6 +29,9 @@ mkdir /etc/jboss
 cp jboss.conf /etc/jboss/
 cp jboss.service /etc/systemd/system/
 cp launch.sh /opt/jboss/bin/
+
+# Change owner of the JBoss EAP directories / links
+chown -R jboss:jboss /opt/jboss*
 
 # Start and enable service
 systemctl start jboss.service
