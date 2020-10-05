@@ -35,6 +35,7 @@ docker run -it --rm --name postgres \
   postgres:10.1-alpine
 ```
 
+* Start application server
 * Use JBoss CLI (connected) to register driver and add the datasource:
 ```
 connect
