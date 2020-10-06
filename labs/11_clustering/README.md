@@ -1,8 +1,8 @@
-# Lab - WildFly - Clustering and load balancing
+# Lab - JBoss EAP - Clustering and load balancing
 
 ## Task 1: Run HA cluster with a load-balancer
 
-**What:** We will run several WildFly servers with deployed distributable application
+**What:** We will run several JBoss EAP servers with deployed distributable application
 
 **How:**
 
@@ -24,28 +24,28 @@
 cp ~/wildfly-administration-training/applications/{counter,counter-distributable}/target/*.war \
    ~/wildfly-administration-training/labs/11_clustering/
 
-# create the new docker image with name wildfly-cluster
-docker build -t wildfly-cluster ~/wildfly-administration-training/labs/11_clustering
+# create the new docker image with name jboss-eap-cluster
+docker build -t jboss-eap-cluster ~/wildfly-administration-training/labs/11_clustering
 ```
 
 * Run the load-balancer node first:
 ```
 # run load-balancer in a container from our new image, map host port 8080 to the loadbalancer:
-docker run -p 8080:8080 -it --rm wildfly-cluster
+docker run -p 8080:8080 -it --rm jboss-eap-cluster
 
-# run WildFly with HA profile
-wildfly/bin/standalone.sh -c standalone-load-balancer.xml -b $MY_IP -bprivate $MY_IP
+# run JBoss EAP with HA profile
+jboss-eap/bin/standalone.sh -c standalone-load-balancer.xml -b $MY_IP -bprivate $MY_IP
 ```
 
 
-* Start 2 WildFly servers with HA profile (run these commands in 2 terminals):
+* Start 2 JBoss EAP servers with HA profile (run these commands in 2 terminals):
 ```
 # run container from our new image
 # It shares /tmp folder between the containers (and host) to make FILE_PING work properly
-docker run -v /tmp:/tmp -it --rm wildfly-cluster
+docker run -v /tmp:/tmp -it --rm jboss-eap-cluster
 
-# run WildFly with HA profile
-wildfly/bin/standalone.sh -c standalone-ha.xml -b $MY_IP -bprivate $MY_IP
+# run JBoss EAP with HA profile
+jboss-eap/bin/standalone.sh -c standalone-ha.xml -b $MY_IP -bprivate $MY_IP
 ```
 
 * Open the **local** application addresses in browser:
