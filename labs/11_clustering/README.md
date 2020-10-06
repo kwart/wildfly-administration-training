@@ -12,6 +12,12 @@
 
 * Build both applications with `mvn install`
 
+```bash
+for i in ~/wildfly-administration-training/applications/{counter,counter-distributable}; do
+   mvn install -f $i/pom.xml
+done
+```
+
 * To make deploying in cluster simpler, we will prepare a new docker image
   with the applications. There is already a `Dockerfile`, which defines
   the format of the new image.
