@@ -24,7 +24,7 @@ deploy [/path/to/]applications/hello/target/hello.war
 **What:** Add virtual host with custom root application
 
 **How:**
-Your test environment is reachable also under `my-server.my.company.example`
+Your test environment is reachable also under `my-server.my-company.example`
 domain name. We will set a custom web application for it.
 
 * start JBoss EAP with default profile
