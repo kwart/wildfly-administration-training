@@ -1,4 +1,4 @@
-# Lab - WildFly - Web subsystem
+# Lab - JBoss EAP - Web subsystem
 
 ## Task 1: Configure root application
 
@@ -7,7 +7,7 @@
 **How:**
 * Check the `hello.war` is ready in `~/wildfly-administration-training/applications/hello/target` directory
   * if not, build it using Maven: `mvn clean install`
-* start WildFly with default profile
+* start JBoss EAP with default profile
 * run JBoss CLI commands:
 ```
 # deploy the application
@@ -27,7 +27,7 @@ deploy [/path/to/]applications/hello/target/hello.war
 Your test environment is reachable also under `my-server.my.company.example`
 domain name. We will set a custom web application for it.
 
-* start WildFly with default profile
+* start JBoss EAP with default profile
 * Build the `counter.war` application in `wildfly-administration-training/applications/counter` directory (`mvn install`)
 * check you see the `hello` application, when open in browser the custom domain name:
   * http://my-server.my-company.example:8080/
