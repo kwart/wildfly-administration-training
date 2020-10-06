@@ -65,9 +65,6 @@ class: center, middle
 http://undertow.io/
 ]
 
-* Java NIO based
-  * both blocking and non-blocking API support
-
 --
 * key features
    * HTTP/2 support
@@ -91,57 +88,6 @@ http://undertow.io/
 ???
 
 * JBoss Web - &lt;=EAP 6x, JBoss AS7
----
-
-## Undertow subsystem
-
-```xml
-<subsystem xmlns="urn:jboss:domain:undertow:4.0">
-    <buffer-cache name="default"/>
-    <server name="default-server">
-*       <ajp-listener name="ajp" socket-binding="ajp"/>
-        <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-        <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
-        <host name="default-host" alias="localhost">
-            <location name="/" handler="welcome-content"/>
-            <filter-ref name="server-header"/>
-            <filter-ref name="x-powered-by-header"/>
-            <http-invoker security-realm="ApplicationRealm"/>
-        </host>
-    </server>
-    <servlet-container name="default">
-        <jsp-config/>
-        <websockets/>
-    </servlet-container>
-    <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
-    </handlers>
-    <filters>
-        <response-header name="server-header" header-name="Server" header-value="WildFly/11"/>
-        <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
-    </filters>
-</subsystem>
-
-```
-???
-* AJP listener only present in HA and Full HA profiles
-
----
-
-## Buffer Caches
-
-* used for caching static resources
-* parameters
-  * fixed sized
-  * allocated in regions
-* referenced from Servlet container configuration  
-
-???
-The total amount of space used can be calculated by multiplying the buffer size by the number of buffers per region by the maximum number of regions.
-
-* buffer-size	The size of the buffers. Smaller buffers allow space to be utilised more effectively
-* buffers-per-region	The numbers of buffers per region
-* max-regions	The maximum number of regions. This controls the maximum amount of memory that can be used for caching
 
 ---
 

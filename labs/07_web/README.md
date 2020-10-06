@@ -28,7 +28,7 @@ Your test environment is reachable also under `my-server.my.company.example`
 domain name. We will set a custom web application for it.
 
 * start WildFly with default profile
-* Build the `counter.war` application (in `applications/counter` directory)
+* Build the `counter.war` application in `wildfly-administration-training/applications/counter` directory (`mvn install`)
 * check you see the `hello` application, when open in browser the custom domain name:
   * http://my-server.my-company.example:8080/
 * run JBoss CLI commands:
