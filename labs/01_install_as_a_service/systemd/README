@@ -1,6 +1,6 @@
 = How to configure JBoss EAP as a systemd service
 
-== Create a wildfly user
+== Create a jboss user
 
     # groupadd -r jboss
     # useradd -r -g jboss -d /opt/jboss -s /sbin/nologin jboss
